@@ -22,14 +22,6 @@ Theta1 = reshape(nn_params(1:hidden_layer_size * (input_layer_size + 1)), ...
 Theta2 = reshape(nn_params((1 + (hidden_layer_size * (input_layer_size + 1))):end), ...
                  num_labels, (hidden_layer_size + 1));
 
-nt1 = Theta1;
-nt1(:,1) = 0;
-
-nt2 = Theta2;
-nt2(:,1) = 0;
-
-THETA = [ nt1(:); nt2(:)];
-
 % Setup some useful variables
 m = size(X, 1);
          
@@ -80,15 +72,15 @@ for i = 1:m
    
     %for example i, make prediction
     
-    %layer 1
-    Z1 = [1 X(i,:) ]';
-    
     %layer 2
+    Z1 = [1 X(i,:) ]';
     Z2 = Theta1*Z1;
-    A2 = [1;sigmoid(Z2)];
+    A2 = sigmoid(Z2);
     
     %layer 3
+    A2 = [ 1; A2];
     Z3 = Theta2*A2;
+    
     A3 = sigmoid(Z3);
  
     %find the cost for example i
@@ -105,22 +97,20 @@ for i = 1:m
     del3 = A3 - Y;
     
     del2 = Theta2'*del3.*[1 ;sigmoidGradient(Z2)];
+    
     del2 = del2(2:end);
   
-   %update gradient
+   % size(grad)
     
-    D1 = del2*Z1';
-    D2= del3*A2';
+    AA = del2*Z1';
+    BB= del3*A2';
     
   
-  grad = grad + [ D1(:) ; D2(:) ];
+  grad = grad + [ AA(:) ; BB(:) ];
     
+    grad = grad/m;
     
 end
-
-grad = grad/m;
-
-grad = grad + lambda/m*THETA;
 
 J = J/m + lambda/(2*m)* (sum(sum(Theta1(:, 2:end).^2)) +  sum(sum(Theta2(:, 2:end).^2))) ;
 
